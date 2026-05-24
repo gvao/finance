@@ -1,9 +1,9 @@
 import { DatabaseSync } from "node:sqlite"
 import type { Datasource } from "./types.js"
 
-export function makeSqliteDatabase(dbPath: string = ':memory:'): Datasource {
+export function makeSqliteDatasource(dbPath: string = ':memory:'): Datasource {
     const db = new DatabaseSync(dbPath)
-
+''
     return {
         query: async (sql: string, params?: any[]) => {
             const stmt = db.prepare(sql)

@@ -11,7 +11,10 @@ export async function getMigrations(db: Datasource) {
     }
 }
 
-export async function migrate(dirPath: string, db: Datasource) {
+export async function migrate(
+    db: Datasource,
+    dirPath: string = path.resolve(process.cwd(), "src/infra/datasource/migrations")
+) {
     const fileNames = await readdir(dirPath)
 
     const result = []
@@ -28,7 +31,11 @@ export async function migrate(dirPath: string, db: Datasource) {
             await db.run(statement)
         }
 
-        await db.run('INSERT INTO migrations (id, name, create_at) VALUES (?, ?, ?)', [order, name.replace('.sql', ''), date.toISOString()])
+        await db.run(statement)
+        await db.run(
+            'INSERT INTO migrations (id, name, create_at) VALUES (?, ?, ?)',
+            [order, name.replace('.sql', ''), date.toISOString()]
+        )
         result.push({ order, name, statement })
     }
     return result
