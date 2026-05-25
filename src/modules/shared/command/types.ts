@@ -17,16 +17,17 @@ export type CommandBuilderDto = CommandCreateDto & CommandOptionalCreateDto
 export type CommandHandler = (type: Command["type"], command: Command) => Promise<EventRecord[]>;
 
 export interface CommandBus {
-    dispatch(commandType: Command["type"], handler: CommandHandler): Promise<void>;
+    handle(commandType: Command["type"], command: Command): Promise<EventRecord[]>;
     register(commandType: Command["type"], handler: CommandHandler): void
 }
 
 
 export interface CommandStore {
     getCommands(): Promise<Command[]>;
-    appendCommand(command: Command): Promise<{ commandId: string }>;
+    appendCommand(command: Command): Promise<[{ commandId: string }, EventRecord[]]>;
     getCommandsByAggregateId(aggregateId: string): Promise<Command[]>;
+    getCommandById(id: string): Promise<Command>;
     getPending(): Promise<Command[]>;
-    processedCommand(id: string): Promise<void>;
-    failedCommand(id: string): Promise<void>;
+    markAsProcessed(id: string): Promise<void>;
+    markAsFailed(id: string): Promise<void>;
 }
