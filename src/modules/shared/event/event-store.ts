@@ -1,8 +1,14 @@
-import type { EventRecord, EventRow } from "./types.js"
+import type { EventPublisher, EventRecord, EventRow, EventStore, EventObserver } from "./types.js"
 import type { Datasource } from "../../../infra/datasource/types.js"
 
 
-const mapRowToEvent = (row: EventRow): EventRecord => ({
+export const buildEvent = (overrides: Partial<EventRecord> & Pick<EventRecord, "type" | "payload" | "aggregateId" | "version" | "commandId">): EventRecord => ({
+    id: crypto.randomUUID(),
+    createdAt: new Date(),
+    ...overrides
+})
+
+const mapRowToEvent = (row: EventRow): EventRecord => buildEvent({
     id: row.id,
     type: row.type,
     payload: JSON.parse(row.payload),
@@ -63,6 +69,35 @@ export function makeEventStore(datasource: Datasource) {
             `, [aggregateId, startVersion]) as EventRow[]
 
             return rows.map(mapRowToEvent)
+        }
+    }
+}
+
+export function composeEventPublisher(eventStore: EventStore): { countListeners: () => number } & EventStore & EventPublisher {
+    const listeners: Set<EventObserver> = new Set()
+    return {
+        ...eventStore,
+
+        countListeners: () => listeners.size,
+
+        async appendEvents(...newEvents) {
+            await eventStore.appendEvents(...newEvents)
+            this.publish(...newEvents)
+            return
+        },
+
+        publish(...events: EventRecord[]) {
+            for (const event of events) {
+                listeners.forEach(listener => listener(event))
+            }
+
+            return
+        },
+        subscribe(listener: EventObserver) {
+            listeners.add(listener)
+        },
+        unsubscribe(listener: EventObserver) {
+            listeners.delete(listener)
         }
     }
 }
