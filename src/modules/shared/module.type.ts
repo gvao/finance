@@ -8,5 +8,5 @@ export interface Module {
 
 export type Dependencies = {
     commandBus: CommandBus,
-    eventBus: EventPublisher,
+    eventPublisher: EventPublisher,
 }
