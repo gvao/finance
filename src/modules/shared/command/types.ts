@@ -1,13 +1,13 @@
 import type { EventRecord } from "../event/types.js";
 
-export type Command = {
+export type Command<T = {}> = {
     id: string;
     aggregateId: string;
     type: string;
     status: "pending" | "processed" | "failed";
     createdAt: Date;
     updatedAt: Date;
-    data: Record<string, any>;
+    data: Partial<T>;
 }
 
 export type CommandCreateDto = Omit<Command, "id" | "status" | "createdAt" | "updatedAt">
