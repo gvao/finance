@@ -60,7 +60,7 @@ export function makeEventStore(datasource: Datasource) {
             })
         },
 
-        getEventsByAggregateId: async (aggregateId: string, startVersion: number): Promise<EventRecord[]> => {
+        getEventsByAggregateId: async (aggregateId: string, startVersion: number = 1): Promise<EventRecord[]> => {
             const rows = await datasource.query(`
                 SELECT * FROM events 
                 WHERE aggregate_id = ?
